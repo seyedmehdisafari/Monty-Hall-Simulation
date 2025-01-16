@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monty Hall Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .door {
+            display: inline-block;
+            margin: 20px;
+            width: 100px;
+            height: 200px;
+            background-color: #555;
+            color: white;
+            font-size: 18px;
+            line-height: 200px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .hidden {
+            background-color: #999;
+        }
+    </style>
+</head>
+<body>
+    <h1>Monty Hall Game</h1>
+    <div id="doors">
+        <div class="door hidden" data-door="0">Door 1</div>
+        <div class="door hidden" data-door="1">Door 2</div>
+        <div class="door hidden" data-door="2">Door 3</div>
+    </div>
+    <button id="switch">Switch</button>
+    <button id="stay">Stay</button>
+    <p id="result"></p>
+
+    <script>
+        let initialChoice = null;
+        let revealedDoor = null;
+
+        document.querySelectorAll('.door').forEach(door => {
+            door.addEventListener('click', () => {
+                if (initialChoice === null) {
+                    initialChoice = door.getAttribute('data-door');
+                    fetch('/play', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ switch: false })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        revealedDoor = data.door_revealed;
+                        document.querySelector(`.door[data-door="${revealedDoor}"]`).classList.remove('hidden');
+                        document.querySelector(`.door[data-door="${revealedDoor}"]`).textContent = 'Goat';
+                    });
+                }
+            });
+        });
+
+        document.getElementById('switch').addEventListener('click', () => {
+            fetch('/play', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ switch: true })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').textContent = data.result === 'car' ? 'You win a car!' : 'You got a goat!';
+            });
+        });
+
+        document.getElementById('stay').addEventListener('click', () => {
+            fetch('/play', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ switch: false })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').textContent = data.result === 'car' ? 'You win a car!' : 'You got a goat!';
+            });
+        });
+    </script>
+</body>
+</html>
